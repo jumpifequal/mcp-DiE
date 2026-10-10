@@ -1,0 +1,14 @@
+# Python environment and generated files
+.venv/
+__pycache__/
+*.pyc
+
+# Local configuration and backups
+*.json
+*.bak
+
+# Examples
+/examples/
+
+# Distribution archives
+/dist/
