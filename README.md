@@ -8,6 +8,8 @@
 
 It is useful at the start of reverse engineering, malware triage, and software inventory: establish what a file is, collect identification evidence, and decide which files need deeper investigation. Dedicated reports, selectable signature databases, heuristic scan modes, and bounded batch scans support repeatable workflows. A Windows setup wizard and desktop console provide configuration, client registration, and diagnostics for Claude Desktop, Claude Code, and Codex.
 
+**Version 1.0** · [GitHub releases](https://github.com/jumpifequal/mcp-DiE/releases)
+
 ### How it compares
 
 | MCP project or category                                                     | Focus                                                                              | Where DiE MCP fits                                                                                                                                                             |
@@ -59,6 +61,7 @@ mcp-DiE/
 │   ├── test_configuration.py
 │   ├── test_die_tools.py
 │   └── test_native_mcp.py
+├── VERSION                 Project release version
 ├── requirements.txt
 ├── README.md
 └── LICENSE
