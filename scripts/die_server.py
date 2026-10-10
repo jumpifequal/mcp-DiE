@@ -82,6 +82,7 @@ async def analyze_file(file_path: str, json_output: bool = True, deep_scan: bool
     """Identify file format, compiler, packer, and protection with optional scan modes.
 
     output_format overrides json_output and accepts json, xml, csv, tsv, or plaintext.
+    entropy=True selects a detailed entropy report instead of detections.
     Database paths select signature directories for this call only.
     """
     if not os.path.isfile(file_path):
@@ -237,6 +238,7 @@ async def analyze_directory(directory_path: str, recursive: bool = False, filena
     filename_pattern matches basenames (e.g. *.exe). max_files is 1..100;
     timeout_seconds is 1..300 for the whole batch. Traversal is limited to
     10,000 entries and results to 1,000,000 characters. Links are skipped.
+    entropy=True returns entropy reports for the files instead of detections.
     complete/stopped_reason report traversal limits; each result may contain an error.
     """
     if not os.path.isdir(directory_path):

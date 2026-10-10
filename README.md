@@ -152,7 +152,7 @@ File tools accept `file_path`. `show_special_info` also requires `method`, the s
 | `deep_scan`            | `false` | Deep scanning                                                           |
 | `heuristic_scan`       | `false` | Heuristic detection                                                     |
 | `aggressive_scan`      | `false` | Aggressive scanning                                                     |
-| `entropy`              | `false` | Include entropy                                                         |
+| `entropy`              | `false` | Select the detailed entropy report instead of file detections |
 | `verbose`              | `false` | Detailed output                                                         |
 | `all_types`            | `false` | Scan all file types                                                     |
 | `profiling`            | `false` | Profile signatures                                                      |
@@ -162,6 +162,8 @@ File tools accept `file_path`. `show_special_info` also requires `method`, the s
 | `extra_database_path`  | unset   | Extra signature database directory                                      |
 | `custom_database_path` | unset   | Custom signature database directory                                     |
 
+For an entropy report with per-section values, use `analyze_file` with `entropy: true`. DiE returns `total`, `status`, and `records` for supported file types. Use `get_file_entropy` for the whole-file entropy structure.
+
 Database directories are optional per-call overrides, supported by `analyze_file`, `analyze_directory`, and `get_database_info`. They must exist and do not change saved settings.
 
 Example `analyze_file` arguments:
@@ -170,8 +172,7 @@ Example `analyze_file` arguments:
 {
   "file_path": "C:\\Windows\\System32\\notepad.exe",
   "heuristic_scan": true,
-  "deep_scan": true,
-  "entropy": true
+  "deep_scan": true
 }
 ```
 
@@ -186,7 +187,7 @@ Example `analyze_file` arguments:
 | `max_files`        | `20`    | File limit, from 1 to 100                     |
 | `timeout_seconds`  | `60`    | Whole-batch time limit, from 1 to 300 seconds |
 
-Directory analysis also accepts `deep_scan`, `heuristic_scan`, `aggressive_scan`, `entropy`, `verbose`, `all_types`, and the three database directory arguments. Files are scanned individually with JSON output. Symbolic links and directory junctions are skipped. Traversal is limited to 10,000 entries and per-file result storage to approximately 1,000,000 characters. Files are processed in filesystem traversal order.
+Directory analysis also accepts `deep_scan`, `heuristic_scan`, `aggressive_scan`, `entropy`, `verbose`, `all_types`, and the three database directory arguments. Setting `entropy` to `true` selects per-file entropy reports instead of detection reports. Files are scanned individually with JSON output. Symbolic links and directory junctions are skipped. Traversal is limited to 10,000 entries and per-file result storage to approximately 1,000,000 characters. Files are processed in filesystem traversal order.
 
 `complete` reports whether traversal finished without a limit or traversal error; it does not imply every file scan succeeded. Check `failed_files` and each result's `error`. `stopped_reason` identifies `file_limit`, `timeout`, `entry_limit`, or `output_limit`; it is `null` when no limit stopped the scan. An oversized file result is replaced by an error entry.
 
