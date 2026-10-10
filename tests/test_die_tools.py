@@ -42,7 +42,7 @@ class ToolTests(unittest.IsolatedAsyncioTestCase):
             self.assertIn('--aggressivecscan', options)
             self.assertIn('--xml', options)
             self.assertNotIn('--json', options)
-            self.assertEqual(options[-2:], ['--database', str(self.root)])
+            self.assertEqual(options[-2:], ['--database', str(self.root.resolve())])
             result = await server.analyze_file(str(self.file), output_format='invalid')
             self.assertTrue(result.startswith('Error:'))
             self.assertEqual(run.call_count, 1)
