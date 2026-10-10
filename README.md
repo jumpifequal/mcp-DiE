@@ -57,7 +57,8 @@ mcp-DiE/
 │   └── die_server.py         MCP server
 ├── tests/
 │   ├── test_configuration.py
-│   └── test_die_tools.py
+│   ├── test_die_tools.py
+│   └── test_native_mcp.py
 ├── requirements.txt
 ├── README.md
 └── LICENSE
@@ -139,7 +140,7 @@ The console's SSE controls accept loopback hosts only and default to `127.0.0.1`
 | `get_database_info`      | Database paths and signature counts                                                                                |
 | `get_die_version`        | Installed DiE command-line version                                                                                 |
 
-File tools accept `file_path`. `show_special_info` also requires `method`, the structure name returned by `list_available_methods`. Reports use DiE's JSON output; structure discovery, database information, and version information return plain text. Empty format-check results are returned as supplied by DiE.
+File tools accept `file_path`. `show_special_info` also requires `method`, the structure name returned by `list_available_methods`. Reports use DiE's JSON output; structure discovery, database information, and version information return plain text. Empty format-check results are returned as supplied by DiE. Unknown or unsupported structures can return `{"data": ""}`. On DiE 3.21, an empty file's hash structure contains empty values. These are native DiE results.
 
 ### File analysis options
 
@@ -163,6 +164,8 @@ File tools accept `file_path`. `show_special_info` also requires `method`, the s
 | `custom_database_path` | unset   | Custom signature database directory                                     |
 
 For an entropy report with per-section values, use `analyze_file` with `entropy: true`. DiE returns `total`, `status`, and `records` for supported file types. Use `get_file_entropy` for the whole-file entropy structure.
+
+`messages: true` preserves native scan messages, which can appear before the report and make JSON or XML output unsuitable for direct parsing. Leave `messages` disabled when machine-readable output is required.
 
 Database directories are optional per-call overrides, supported by `analyze_file`, `analyze_directory`, and `get_database_info`. They must exist and do not change saved settings.
 
@@ -206,13 +209,22 @@ Example `analyze_directory` arguments:
 
 ## Verification and troubleshooting
 
-The automated tests verify client configuration preservation, supported CLI arguments, MCP tool behavior, and directory scan limits. They use temporary files and mocked native calls, so they do not require a DiE installation or modify client settings. They are not required to run the MCP server.
+The automated tests verify client configuration preservation, supported CLI arguments, MCP tool behavior, and directory scan limits. The default suite uses temporary files and mocked native calls, so it does not require a DiE installation or modify client settings. Optional native integration tests exercise all ten tools through stdio and loopback SSE MCP sessions and compares reports with direct CLI calls. They are not required to run the MCP server.
 
 Install the project dependencies, then run the tests from the project root:
 
 ```powershell
 python -m unittest discover -s tests -v
 ```
+
+To include the native integration test in PowerShell, set the installed executable path first:
+
+```powershell
+$env:DIE_TEST_EXECUTABLE = 'C:\Program Files\DiE\diec.exe'
+python -m unittest discover -s tests -v
+```
+
+The native test scans DiE itself and temporary empty, text, truncated executable, and ZIP fixtures. It checks scan flags, output formats, structure reports, database overrides, directory results, hashes, and invalid inputs. Temporary fixtures are removed after the test. Without `DIE_TEST_EXECUTABLE`, the native tests are skipped.
 
 To check the running MCP server with the configured interpreter:
 

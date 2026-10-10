@@ -50,6 +50,25 @@ class ToolTests(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(result.startswith('Error:'))
             self.assertEqual(run.call_count, 1)
 
+    async def test_empty_output_format_is_rejected(self):
+        with patch.object(server, 'run_die_command') as run:
+            result = await server.analyze_file(str(self.file), output_format='')
+            self.assertTrue(result.startswith('Error:'))
+            run.assert_not_called()
+
+    def test_directory_skips_windows_reparse_points(self):
+        entry = SimpleNamespace(path=str(self.root / 'junction'),
+                                stat=lambda **kwargs: SimpleNamespace(st_file_attributes=1024),
+                                is_symlink=lambda: False)
+        with patch.object(server.stat, 'FILE_ATTRIBUTE_REPARSE_POINT', 1024, create=True), \
+             patch.object(server.os, 'scandir') as scan, \
+             patch.object(server, 'run_die_command') as run:
+            scan.return_value.__enter__.return_value = iter([entry])
+            result = json.loads(server.scan_directory(str(self.root), True, '*', 20, 60, ['--json']))
+            self.assertTrue(result['complete'])
+            self.assertEqual(result['scanned_files'], 0)
+            run.assert_not_called()
+
     async def test_missing_inputs_do_not_launch_die(self):
         with patch.object(server, 'run_die_command') as run:
             self.assertTrue((await server.get_file_hashes(str(self.root / 'missing'))).startswith('Error:'))

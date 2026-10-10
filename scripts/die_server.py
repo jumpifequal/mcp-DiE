@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import stat
 import time
 from typing import List, Optional
 
@@ -59,7 +60,7 @@ def scan_options(json_output=True, deep_scan=False, entropy=False, verbose=False
                  heuristic_scan=False, aggressive_scan=False, all_types=False,
                  profiling=False, messages=False, hide_unknown=False, output_format=None,
                  database_path=None, extra_database_path=None, custom_database_path=None):
-    output = output_format or ('json' if json_output else 'plaintext')
+    output = output_format if output_format is not None else ('json' if json_output else 'plaintext')
     if output not in OUTPUT_FORMATS:
         raise ValueError('output_format must be one of: ' + ', '.join(OUTPUT_FORMATS))
     options = ['--' + output]
@@ -83,6 +84,7 @@ async def analyze_file(file_path: str, json_output: bool = True, deep_scan: bool
 
     output_format overrides json_output and accepts json, xml, csv, tsv, or plaintext.
     entropy=True selects a detailed entropy report instead of detections.
+    messages=True can prepend native warnings, making JSON/XML unsuitable for direct parsing.
     Database paths select signature directories for this call only.
     """
     if not os.path.isfile(file_path):
@@ -98,7 +100,10 @@ async def analyze_file(file_path: str, json_output: bool = True, deep_scan: bool
 
 @mcp.tool()
 async def show_special_info(file_path: str, method: str) -> str:
-    """Read a DiE structure, such as Info, Hash, Hash#MD5, Entropy, or Check format."""
+    """Read a DiE structure, such as Info, Hash, Hash#MD5, Entropy, or Check format.
+
+    Unknown or unsupported structures preserve DiE's empty data result.
+    """
     if not os.path.isfile(file_path):
         return f"Error: File not found at path '{file_path}'"
     if not method.strip():
@@ -122,7 +127,10 @@ async def get_file_info(file_path: str) -> str:
 
 @mcp.tool()
 async def get_file_hashes(file_path: str) -> str:
-    """Return JSON hashes supported by DiE, including MD5, SHA-256, and SHA-512."""
+    """Return JSON hashes supported by DiE, including MD5, SHA-256, and SHA-512.
+
+    Native empty hash values, such as those for empty files in DiE 3.21, are preserved.
+    """
     return await show_special_info(file_path, 'Hash')
 
 
@@ -179,9 +187,10 @@ def scan_directory(directory, recursive, filename_pattern, max_files, timeout_se
                     if visited > 10000:
                         stopped_reason = 'entry_limit'
                         break
-                    if entry.is_symlink() or getattr(os.path, 'isjunction', lambda _: False)(entry.path):
-                        continue
                     try:
+                        attributes = getattr(entry.stat(follow_symlinks=False), 'st_file_attributes', 0)
+                        if entry.is_symlink() or attributes & getattr(stat, 'FILE_ATTRIBUTE_REPARSE_POINT', 0):
+                            continue
                         if entry.is_dir(follow_symlinks=False):
                             if recursive:
                                 pending.append(entry.path)
