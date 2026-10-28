@@ -2,6 +2,8 @@
   <img src="assets/logo.png" alt="DiE MCP logo" width="280">
 </p>
 
+[![M8ven Score](https://m8ven.ai/badge/mcp/jumpifequal/mcp-die)](https://m8ven.ai/mcp/jumpifequal/mcp-die?s=readme)
+
 # DiE (Detect It Easy) MCP Server
 
 **DiE MCP gives Claude and Codex a local binary-triage service powered by [Detect It Easy](https://github.com/horsicq/Detect-It-Easy).** An assistant can identify a file's format and architecture, inspect compiler and packer detections, obtain hashes and entropy, and scan a directory through ten MCP tools. Analysis runs through the installed `diec` executable without launching the file being examined; reports are returned to the connected MCP client.
